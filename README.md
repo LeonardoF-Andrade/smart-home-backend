@@ -1,95 +1,150 @@
-<<<<<<< HEAD
+# SMART-HOME Backend (NestJS)
 
-# Smart Home Backend
+API entre **frontend web** e a **maquete com ESP32**.  
+Este serviço recebe comandos HTTP do site e encaminha para o ESP32, além de expor endpoints simples e consistentes para **portão, porta, janela, alarme, varal/secagem** e **iluminação**.
 
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+![Stack](https://img.shields.io/badge/Node-18%2B-339933) ![NestJS](https://img.shields.io/badge/NestJS-Framework-E0234E) ![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6) ![Axios](https://img.shields.io/badge/Axios-HTTP%20client-5A29E4)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+---
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## ✨ Recursos
 
-## Description
+- **Gateway HTTP** entre Frontend ↔ ESP32 (via Axios).
+- **Arquitetura limpa**: controllers, use-cases e interfaces/DTOs.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+---
 
-## Project setup
+## 🗂️ Estrutura (resumo)
 
-```bash
-$ npm install
+```
+src/
+  dto/
+    status-dto.interface.ts
+  enum/
+    lights.enum.interface.ts
+  iluminação/
+    iluminação.controller.ts
+  interface/
+    deviceControl.interface.ts
+    turnOnAll.interface.ts
+  ui/
+    utils.controller.ts
+  use-case/
+    deviceControl.ts
+    turnOnAll.ts
+  app.module.ts
+  main.ts
 ```
 
-## Compile and run the project
+---
+
+## 🔧 Requisitos
+
+- **Node.js 18+**
+- **npm** (ou pnpm/yarn)
+
+---
+
+## 🚀 Como rodar
 
 ```bash
-# development
-$ npm run start
+# 1) Instalar dependências
+npm install
+# edite  com o IP do seu ESP32
 
-# watch mode
-$ npm run start:dev
+# 3) Desenvolvimento (watch)
+npm run start:dev
 
-# production mode
-$ npm run start:prod
+# 4) Produção
+npm run build
+npm run start:prod
 ```
 
-## Run tests
+## 📡 API
+
+### Prefixos
+- **Utilidades/atuadores**: `/utils`
+- **Iluminação**: `/iluminacao` (sem acento)
+
+### 1) Utilidades / Dispositivos binários
+Controla dispositivos que alternam entre **ligado/desligado** ou **abrir/fechar**.  
+**Controller:** `ui/utils.controller.ts`
+
+> Todos recebem `PUT` com body `{ "status": true | false }`.
+
+| Método | Rota                   | Dispositivo     | Body (JSON)          | Ação (`true`/`false`)                  |
+|:-----:|------------------------|-----------------|----------------------|----------------------------------------|
+| PUT   | `/utils/gate/status`     | Portão          | `{ "status": bool }` | Abre / Fecha                           |
+| PUT   | `/utils/door/status`     | Porta           | `{ "status": bool }` | Abre / Fecha                           |
+| PUT   | `/utils/window/status`   | Janela          | `{ "status": bool }` | Abre / Fecha                           |
+| PUT   | `/utils/drying/status`   | Varal/Secagem   | `{ "status": bool }` | Inicia / Para                          |
+| PUT   | `/utils/alarm/status`    | Alarme          | `{ "status": bool }` | Liga / Desliga                         |
+
+**Exemplo (cURL):**
+```bash
+curl -X PUT http://localhost:3001/utils/gate/status   -H "Content-Type: application/json"   -d '{"status": true}'
+```
+
+#### Status geral (proxy do ESP)
+Retorna o JSON enviado pelo ESP32 em `/status`.
+
+| Método | Rota            | Descrição                       |
+|:-----:|------------------|----------------------------------|
+| GET   | `/utils/status`  | Estado consolidado do sistema   |
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+curl http://localhost:3001/utils/status
 ```
 
-## Resources
+---
 
-Check out a few resources that may come in handy when working with NestJS:
+### 2) Iluminação
+**Controller:** `iluminação/iluminação.controller.ts`
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+- **Acender/Apagar por cômodo**  
+  `POST /iluminacao`  
+  **Params:** `{ "id": "<nome-do-comodo>" }`  
+  Encaminha para `${ESP_IP}/{room}` (ex.: `GET ${ESP_IP}/bedroom`).
 
-## Support
+```bash
+curl -X POST http://localhost:3001/iluminacao   -H "Content-Type: application/json"   -d '{ "room": "bedroom" }'
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+- **Sinal SOS**  
+  `POST /iluminacao/sos` (sem body)  
+  Encaminha para `${ESP_IP}/sos`.
 
-## Stay in touch
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+---
 
-## License
+## 🧠 Arquitetura (alto nível)
 
-# Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
 
-## License
+**Como funciona:**
+- Controllers recebem as requisições do frontend.
+- Use-cases montam chamadas ao ESP32 com `axios` usando `ESP_IP` do `.env`.
+- Requisições enviadas com `Connection: close` para evitar conexões persistentes que possam re-disparar ações no ESP.
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+---
 
-> > > > > > > f3e57673d317a8b5efa8c142d4d35871767d6f51
+
+## 🔒 CORS e Segurança
+
+- Habilite CORS conforme o domínio do frontend.
+- Considere `timeout` e **retries exponenciais** no Axios.
+- Avalie um logger estruturado (ex.: `pino`) para produção.
+
+---
+
+## 📽️ Demonstração e Repositórios
+
+- **Vídeo de demonstração**: disponível no meu post do LinkedIn - https://www.linkedin.com/in/leonardoandrade-dev.
+- **Frontend**: `https://github.com/LeonardoF-Andrade/smart-home-frontend`
+- **Backend**: este repositório.
+
+---
+
+## 👨‍💻 Autor
+
+**Leonardo Andrade** — Engenharia Elétrica • Dev Full-Stack • IoT & Automação  
+Aberto a conexões e oportunidades nas áreas de **Desenvolvimento de Software**. 🚀

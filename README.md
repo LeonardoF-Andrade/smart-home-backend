@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+
 # Smart Home Backend
 
 <p align="center">
@@ -85,9 +86,10 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 
 ## License
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
-=======
+# Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+
 ## License
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
->>>>>>> f3e57673d317a8b5efa8c142d4d35871767d6f51
+
+> > > > > > > f3e57673d317a8b5efa8c142d4d35871767d6f51
